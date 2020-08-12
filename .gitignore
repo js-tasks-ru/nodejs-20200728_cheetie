@@ -1,5 +1,6 @@
 .idea
 .vscode
 node_modules
+nodemon.json
 package-lock.json
 yarn.lock
