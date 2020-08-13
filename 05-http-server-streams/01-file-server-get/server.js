@@ -9,13 +9,13 @@ server.on('request', (req, res) => {
   const pathname = url.parse(req.url).pathname.slice(1);
   const filepath = path.join(__dirname, 'files', pathname);
 
-  if (pathname.includes('/') || pathname.includes(path.sep)) {
-    res.statusCode = 400;
-    res.end();
-  }
-
   switch (req.method) {
     case 'GET':
+      if (pathname.includes('/') || pathname.includes(path.sep)) {
+        res.statusCode = 400;
+        res.end();
+      }
+
       fs
         .createReadStream(filepath)
         .on('error', err => {
