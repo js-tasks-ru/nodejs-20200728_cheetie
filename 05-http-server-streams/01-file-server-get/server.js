@@ -14,6 +14,7 @@ server.on('request', (req, res) => {
       if (pathname.includes('/') || pathname.includes(path.sep)) {
         res.statusCode = 400;
         res.end();
+        return;
       }
 
       fs
