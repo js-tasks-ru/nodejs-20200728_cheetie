@@ -19,12 +19,14 @@ server.on('request', (req, res) => {
       fs
         .createReadStream(filepath)
         .on('error', err => {
-          if (err.code === 'ENOENT') {
-            res.statusCode = 404;
-            res.end('not found');
-          } else {
-            res.statusCode = 500;
-            res.end('internal server error');
+          if (err) {
+            if (err.code === 'ENOENT') {
+              res.statusCode = 404;
+              res.end('not found');
+            } else {
+              res.statusCode = 500;
+              res.end('internal server error');
+            }
           }
         })
         .pipe(res);
