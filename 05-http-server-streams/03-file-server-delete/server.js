@@ -14,6 +14,7 @@ server.on('request', (req, res) => {
       if (pathname.includes('/') || pathname.includes(path.sep)) {
         res.statusCode = 400;
         res.end();
+        return;
       }
 
       fs.unlink(filepath, err => {
@@ -25,8 +26,11 @@ server.on('request', (req, res) => {
             res.statusCode = 500;
             res.end('internal server error');
           }
+        } else {
+          res.statusCode = 200;
+          res.end();
         }
-      })
+      });
       break;
 
     default:
