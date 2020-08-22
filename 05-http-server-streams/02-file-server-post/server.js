@@ -46,6 +46,7 @@ server.on('request', (req, res) => {
           if (res.finished) {
             return;
           }
+          fs.unlink(filepath, err => {});
           res.statusCode = 500;
           res.end('Server Error');
         });
