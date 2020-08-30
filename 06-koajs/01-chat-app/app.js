@@ -6,6 +6,7 @@ app.use(require('koa-static')(path.join(__dirname, 'public')));
 app.use(require('koa-bodyparser')());
 
 const Router = require('koa-router');
+const { setImmediate } = require('timers');
 const router = new Router();
 
 const messages = [];
@@ -14,7 +15,7 @@ const clients = [];
 const getMessages = () => {
     return new Promise(resolve => {
         if (messages.length) resolve(messages);
-        else setTimeout(() => resolve(getMessages()), 500);
+        else setImmediate(() => resolve(getMessages()));
     });
 }
 
