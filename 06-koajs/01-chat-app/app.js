@@ -1,4 +1,5 @@
 const path = require('path');
+const { setImmediate } = require('timers');
 const Koa = require('koa');
 const app = new Koa();
 
@@ -6,7 +7,6 @@ app.use(require('koa-static')(path.join(__dirname, 'public')));
 app.use(require('koa-bodyparser')());
 
 const Router = require('koa-router');
-const { setImmediate } = require('timers');
 const router = new Router();
 
 const messages = [];
@@ -21,7 +21,7 @@ const getMessages = () => {
 
 router.get('/subscribe', async (ctx, next) => {
     const message = await getMessages()
-        .then(messages => messages.join('\n'));
+        .then(messages => messages.join('<br>'));
 
     ctx.request.body = message;
     messages.length = 0;
