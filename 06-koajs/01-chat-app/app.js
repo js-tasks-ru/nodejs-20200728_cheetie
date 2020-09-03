@@ -1,5 +1,4 @@
 const path = require('path');
-const { setImmediate } = require('timers');
 const Koa = require('koa');
 const app = new Koa();
 
@@ -9,33 +8,42 @@ app.use(require('koa-bodyparser')());
 const Router = require('koa-router');
 const router = new Router();
 
-const messages = [];
-const clients = [];
+app.use(async (ctx, next) => {
+    try {
+        await next();
+    } catch (e) {
+        console.error(e);
+    }
+});
 
-const getMessages = () => {
-    return new Promise(resolve => {
-        if (messages.length) resolve(messages);
-        else setImmediate(() => resolve(getMessages()));
-    });
-}
+const clients = new Map();
 
 router.get('/subscribe', async (ctx, next) => {
-    const message = await getMessages()
-        .then(messages => messages.join('<br>'));
+    ctx.request.body = await new Promise(resolve => {
+        clients.set(ctx.url, resolve);
+    });
 
-    ctx.request.body = message;
-    messages.length = 0;
-
+    ctx.req.on('close', function() { 
+        clients.delete[ctx.url];
+    });
+    
     await next();
-}, async (ctx, next) => {
+
+}, async (ctx) => {
     ctx.response.status = 200;
     ctx.body = ctx.request.body;
 });
 
 router.post('/publish', async (ctx, next) => {
     const { message } = ctx.request.body;
-    if (!message) return ctx.throw(400, 'message is required');
-    messages.push(message);
+
+    if (!message) ctx.throw(400, 'message is required');
+   
+    for (const resolve of clients.values()) {
+        resolve(message);
+    }
+    clients.clear();
+
     ctx.response.status = 201;
     ctx.body = "success";
 });
