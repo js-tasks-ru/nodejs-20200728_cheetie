@@ -42,6 +42,7 @@ router.post('/publish', async (ctx, next) => {
     for (const resolve of clients) {
         resolve(message);
     }
+    clients.clear();
 
     ctx.response.status = 201;
     ctx.body = "success";
