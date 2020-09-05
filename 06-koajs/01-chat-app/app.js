@@ -16,15 +16,15 @@ app.use(async (ctx, next) => {
     }
 });
 
-const clients = new Map();
+const clients = new Set();
 
 router.get('/subscribe', async (ctx, next) => {
     ctx.request.body = await new Promise(resolve => {
-        clients.set(ctx.url, resolve);
-    });
+        clients.add(resolve);
 
-    ctx.req.on('close', function() { 
-        clients.delete[ctx.url];
+        ctx.req.on('close', function() { 
+            clients.delete(resolve);
+        });
     });
     
     await next();
@@ -39,10 +39,9 @@ router.post('/publish', async (ctx, next) => {
 
     if (!message) ctx.throw(400, 'message is required');
    
-    for (const resolve of clients.values()) {
+    for (const resolve of clients) {
         resolve(message);
     }
-    clients.clear();
 
     ctx.response.status = 201;
     ctx.body = "success";
