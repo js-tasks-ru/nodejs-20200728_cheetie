@@ -11,9 +11,7 @@ const router = new Router();
 app.use(async (ctx, next) => {
     try {
         await next();
-    } catch (e) {
-        console.error(e);
-    }
+    } catch (e) {  }
 });
 
 const clients = new Set();
@@ -42,7 +40,6 @@ router.post('/publish', async (ctx, next) => {
     for (const resolve of clients) {
         resolve(message);
     }
-    clients.clear();
 
     ctx.response.status = 201;
     ctx.body = "success";
