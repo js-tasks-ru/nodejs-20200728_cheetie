@@ -6,7 +6,7 @@ const {categoryList} = require('./controllers/categories');
 const app = new Koa();
 
 app.use(async (ctx, next) => {
-  try {console.log(2)
+  try {
     await next();
   } catch (err) {
     if (err.status) {
