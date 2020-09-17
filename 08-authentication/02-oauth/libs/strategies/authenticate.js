@@ -1,4 +1,4 @@
-const User = require('../../models/User');  // npm run test:local 08-authentication 02-oauth
+const User = require('../../models/User');
 
 module.exports = async function authenticate(strategy, email, displayName = email, done) {
   if (!email) {

@@ -32,6 +32,12 @@ app.use(async (ctx, next) => {
 app.use((ctx, next) => {
   ctx.login = async function(user) {
     const token = uuid();
+    const session = await Session.create({ 
+      token, 
+      user: user.id, 
+      lastVisit: new Date() 
+    });
+    session.save();
 
     return token;
   };
@@ -45,6 +51,17 @@ router.use(async (ctx, next) => {
   const header = ctx.request.get('Authorization');
   if (!header) return next();
 
+  const token = header.split(' ')[1];
+  if (!token) return next();
+
+  const session = await Session.findOne({ token });
+  if (!session) ctx.throw(401, 'Неверный аутентификационный токен');
+
+  await session.update({ lastVisit: new Date() });
+  session.save();
+
+  ctx.user = await User.findById(session.user);   // or by session.populate()
+
   return next();
 });
 
@@ -53,12 +70,13 @@ router.post('/login', login);
 router.get('/oauth/:provider', oauth);
 router.post('/oauth_callback', handleMongooseValidationError, oauthCallback);
 
-router.get('/me', me);
+router.get('/me', mustBeAuthenticated, me);
 
 app.use(router.routes());
 
 // this for HTML5 history in browser
 const fs = require('fs');
+const User = require('./models/User');
 
 const index = fs.readFileSync(path.join(__dirname, 'public/index.html'));
 app.use(async (ctx) => {
