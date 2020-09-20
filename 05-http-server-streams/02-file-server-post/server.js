@@ -19,53 +19,50 @@ server.on('request', (req, res) => {
         return;
       }
 
-      fs.exists(filepath, exists => {
-        if (exists) {
+      const writeStream = fs.createWriteStream(filepath, {flags: 'wx'});
+      
+      writeStream.on('error', (err) => {
+        if (err.code === 'EEXIST') {
           res.statusCode = 409;
           res.end('File exists');
           return;
         }
-
-        const writeStream = fs.createWriteStream(filepath);
-        
-        writeStream.on('error', () => {
-          fs.unlink(filepath, err => {
-            if (err) {
-              res.statusCode = 500;
-              res.end('Server Error');
-            }
-          });
-        });
-        
-        writeStream.on('finish', () => {
-          res.statusCode = 201;
-          res.end('Success');
-        });
-        
-        res.on('close', () => {
-          if (res.finished) {
-            return;
-          }
-          fs.unlink(filepath, err => {});
-          res.statusCode = 500;
-          res.end('Server Error');
-        });
-
-        limitStream.on('error', err => {
+        fs.unlink(filepath, err => {
           if (err) {
-            fs.unlink(filepath, err => {});
-            if (err.name === 'LimitExceededError') {
-              res.statusCode = 413;
-              res.end('Server Error');
-            } else {
-              res.statusCode = 500;
-              res.end('Server Error');
-            }
+            res.statusCode = 500;
+            res.end('Server Error');
           }
         });
-
-        req.pipe(limitStream).pipe(writeStream);
       });
+      
+      writeStream.on('finish', () => {
+        res.statusCode = 201;
+        res.end('Success');
+      });
+      
+      res.on('close', () => {
+        if (res.finished) {
+          return;
+        }
+        fs.unlink(filepath, err => {});
+        res.statusCode = 500;
+        res.end('Server Error');
+      });
+
+      limitStream.on('error', err => {
+        if (err) {
+          fs.unlink(filepath, err => {});
+          if (err.name === 'LimitExceededError') {
+            res.statusCode = 413;
+            res.end('Server Error');
+          } else {
+            res.statusCode = 500;
+            res.end('Server Error');
+          }
+        }
+      });
+      
+      req.pipe(limitStream).pipe(writeStream);
       break;
 
     default:
