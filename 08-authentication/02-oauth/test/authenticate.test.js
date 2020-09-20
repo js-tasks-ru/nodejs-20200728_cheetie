@@ -2,7 +2,7 @@ const connection = require('../libs/connection');
 const authenticate = require('../libs/strategies/authenticate');
 const expect = require('chai').expect;
 const User = require('../models/User');
-const users = require('../../../data/users');
+const users = require('../../../__data/users');
 
 describe('authentication/oauth', () => {
   describe('функция аутентификации', function() {
