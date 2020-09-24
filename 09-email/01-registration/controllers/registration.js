@@ -4,33 +4,21 @@ const Session = require('../models/Session');
 const sendMail = require('../libs/sendMail');    
 
 module.exports.register = async (ctx, next) => {
-  const errors = {};
   const { email, displayName, password } = ctx.request.body;
-  const userExists = await User.findOne({ email });
+  const verificationToken = uuid();
   
-  // if (userExists) {
-  //   errors.email = 'Такой email уже существует';
-  //   ctx.throw(400, { errors });
-  // }
-  // try {
-    const verificationToken = uuid();
-    const user = await User.create({ email, displayName, verificationToken });
-    await user.setPassword(password);
-    await user.save();
-    
-    await sendMail({
-        template: 'confirmation',
-        locals: {token: verificationToken},
-        to: email,
-        subject: 'Подтвердите почту'
-    });
-
-    ctx.body = { status: 'ok' };
-    
-  // } catch(err) {
-  //   if (err.name !== 'ValidationError') throw err;
-  //   throw new ValidationError('Некорректный email.');
-  // }
+  const user = await User.create({ email, displayName, verificationToken });
+  await user.setPassword(password);
+  await user.save();
+  
+  await sendMail({
+      template: 'confirmation',
+      locals: {token: verificationToken},
+      to: email,
+      subject: 'Подтвердите почту'
+  });
+  
+  ctx.body = { status: 'ok' };
 };
 
 module.exports.confirm = async (ctx, next) => {
