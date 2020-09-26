@@ -1,5 +1,6 @@
 const Order = require('../models/Order');
 const sendMail = require('../libs/sendMail');
+const mapOrder = require('../mappers/order');
 
 module.exports.checkout = async function checkout(ctx, next) {
     const { product, phone, address } = ctx.request.body;
@@ -18,6 +19,8 @@ module.exports.checkout = async function checkout(ctx, next) {
 };
 
 module.exports.getOrdersList = async function ordersList(ctx, next) {
-    const orders = await Order.find({ user: ctx.user });
+    const orders = await Order.find({ user: ctx.user })
+        .then(orders => orders.map(order => mapOrder(order.populate('product'))));
+        
     ctx.body = { orders };
 };
